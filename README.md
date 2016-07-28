@@ -1,0 +1,1 @@
+# islandora_cron_pathauto
