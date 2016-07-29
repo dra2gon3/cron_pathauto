@@ -1,0 +1,4 @@
+name = Cron Pathauto
+description = Automatically bulk generates all the path aliases. Requires pathauto
+core = 7.x
+dependencies[] = drupal:pathauto

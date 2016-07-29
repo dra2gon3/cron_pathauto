@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * Implements hook_form_alter()
+ * 
+ * Hooks onto admin/config/search/path/settings
+ * Adds a form setting for regular cron for URL aliases
+ */
+function cron_pathauto_form_alter(&$form , &$form_state, $form_id) {
+  if ($form_id == 'pathauto_settings_form') {
+      
+    $form['cron_group'] = array(
+        '#type'        => 'fieldset',
+        '#title'       => t('Cron Schedule'),
+        '#weight'      => -3,
+    );
+    
+    $form['cron_group']['schedule_cron_options'] = array(
+      '#title'         => t('Select the types of paths for which to regularly cron URL aliases'),
+      '#type'          => 'checkboxes',
+      '#options'       => array(),
+      '#default_value' => variable_get('cron_schedule', 0),
+    );
+
+    $pathauto_settings = module_invoke_all('pathauto', 'settings');
+    foreach ($pathauto_settings as $settings) {
+      if (!empty($settings->batch_update_callback)) {
+        $form['#update_callbacks'][$settings->batch_update_callback] = $settings;
+        $form['cron_group']['schedule_cron_options']['#options'][$settings->batch_update_callback] = $settings->groupheader;
+      }
+    }
+    
+    $status = '<p>' . t('Last run: %cron-last ago.', array('%cron-last' => format_interval(REQUEST_TIME - variable_get('cron_last')),)) . '</p>';
+    $form['cron_group']['cron_status'] = array(
+      '#markup' => $status,
+    );
+    
+    $form['cron_group']['cron_submit'] = array(
+      '#type'          => 'submit',
+      '#value'         => t('Run Cron Now'),
+      '#name'          => 'cron_submit',
+    );
+
+    array_push( $form['#submit'], 'islandora_cron_pathauto_form_submit');
+  }
+}
+/*
+ * Implements hook_form_submit()
+ * 
+ * This checks for the two submit buttons in admin/config/search/path/settings
+ * 
+ * If the button 'Run Cron' is clicked, it is supposed to call the hook cron_pathauto_cron();
+ * else it sets the variables for cron_schedule
+ */
+
+function cron_pathauto_form_submit($form, &$form_state) {
+  /*if ($form_state['triggering_element']['#name'] == 'cron_submit') {
+    cron_pathauto_cron();
+  }
+  else {*/
+  variable_set("cron_schedule", $form_state['values']['schedule_cron_options']);
+ //}
+}
+
+/**
+ * Implements hook_cron()
+ * This is supposed to values from schedule_cron and
+ * then updating the aliases for the values from the checkboxes
+ */
+/*
+function islandora_cron_pathauto_cron(){
+    $options = variable_get("cron_schedule", 0);
+    $hello = pathauto_bulk_update_form();
+    
+    $batch = array(
+      'title' => t('Bulk updating URL aliases'),
+      'operations' => array(
+        array('pathauto_bulk_update_batch_start', array()),
+      ),
+      'finished' => 'pathauto_bulk_update_batch_finished',
+      'file' => drupal_get_path('module', 'pathauto') . '/pathauto.admin.inc',
+    );
+
+    foreach ($options as $callback) {
+      if (!empty($callback)) {
+        $settings = $hello['#update_callbacks'][$callback];
+        dpm($settings);
+        if (!empty($settings->batch_file)) {
+          $batch['operations'][] = array('pathauto_bulk_update_batch_process', array($callback, $settings));
+        }
+        else {
+          $batch['operations'][] = array($callback, array());
+        }
+      }
+    }
+
+    batch_set($batch);
+}*/
