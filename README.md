@@ -1,4 +1,4 @@
-# cron_pathauto
+# Cron Pathauto
 
 ## Introduction
 
@@ -9,7 +9,7 @@ it hooks unto that form.
 
 This module requires the following modules/libraries:
 
-* [Drupal](https://www.drupal.org/project/pathauto)
+* [Pathauto](https://www.drupal.org/project/pathauto)
 
 ## Installation
 
